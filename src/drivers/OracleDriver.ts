@@ -3,6 +3,7 @@ import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { IConnectionOptions } from "../IConnectionOptions";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { EnumInfo } from "../models/EnumInfo";
 import * as TomgUtils from "../Utils";
 import { AbstractDriver } from "./AbstractDriver";
 
@@ -26,6 +27,12 @@ export class OracleDriver extends AbstractDriver {
             TomgUtils.LogError("", false, error);
             throw error;
         }
+    }
+
+    public async GetEnums(schema: string): Promise<EnumInfo[]> {
+        throw new Error(
+            "This fork of typeorm-models only supports postgres right now"
+        );
     }
 
     public GetAllTablesQuery = async (schema: string) => {

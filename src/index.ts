@@ -170,33 +170,52 @@ function GetUtilParametersByArgs() {
     let namingStrategyPath: string;
     if (argv.namingStrategy && argv.namingStrategy !== "") {
         // tslint:disable-next-line:no-var-requires
-        namingStrategyPath = argv.namingStrategy;
+        namingStrategyPath = argv.namingStrategy as string;
     } else {
         namingStrategyPath = "";
     }
     const connectionOptions: IConnectionOptions = new IConnectionOptions();
-    (connectionOptions.databaseName = argv.d ? argv.d.toString() : null),
+    (connectionOptions.databaseName = argv.d
+        ? (argv.d as string).toString()
+        : ""),
         (connectionOptions.databaseType = argv.e),
         (connectionOptions.host = argv.h),
-        (connectionOptions.password = argv.x ? argv.x.toString() : null),
-        (connectionOptions.port = parseInt(argv.p, 10) || standardPort),
+        (connectionOptions.password = argv.x ? argv.x.toString() : ""),
+        (connectionOptions.port =
+            parseInt(argv.p as string, 10) || standardPort),
         (connectionOptions.schemaName = argv.s
-            ? argv.s.toString()
+            ? (argv.s as string).toString()
             : standardSchema),
         (connectionOptions.ssl = argv.ssl),
-        (connectionOptions.user = argv.u ? argv.u.toString() : standardUser);
+        (connectionOptions.user = argv.u
+            ? (argv.u as string).toString()
+            : ((standardUser as unknown) as string));
     const generationOptions: IGenerationOptions = new IGenerationOptions();
     (generationOptions.activeRecord = argv.a),
         (generationOptions.generateConstructor = argv.generateConstructor),
-        (generationOptions.convertCaseEntity = argv.ce),
-        (generationOptions.convertCaseFile = argv.cf),
-        (generationOptions.convertCaseProperty = argv.cp),
+        (generationOptions.convertCaseEntity = argv.ce as
+            | "pascal"
+            | "camel"
+            | "none"),
+        (generationOptions.convertCaseFile = argv.cf as
+            | "pascal"
+            | "camel"
+            | "param"
+            | "none"),
+        (generationOptions.convertCaseProperty = argv.cp as
+            | "pascal"
+            | "camel"
+            | "none"),
         (generationOptions.lazy = argv.lazy),
         (generationOptions.customNamingStrategyPath = namingStrategyPath),
         (generationOptions.noConfigs = argv.noConfig),
-        (generationOptions.propertyVisibility = argv.pv),
+        (generationOptions.propertyVisibility = argv.pv as
+            | "none"
+            | "public"
+            | "protected"
+            | "private"),
         (generationOptions.relationIds = argv.relationIds),
-        (generationOptions.resultsPath = argv.o ? argv.o.toString() : null);
+        (generationOptions.resultsPath = argv.o ? argv.o.toString() : "");
 
     return { driver, connectionOptions, generationOptions };
 }

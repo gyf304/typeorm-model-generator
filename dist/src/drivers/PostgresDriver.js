@@ -1,84 +1,59 @@
-import * as changeCase from "change-case";
-import * as PG from "pg";
-import { ConnectionOptions } from "typeorm";
-import * as TypeormDriver from "typeorm/driver/postgres/PostgresDriver";
-import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
-import { IConnectionOptions } from "../IConnectionOptions";
-import { ColumnInfo } from "../models/ColumnInfo";
-import { EntityInfo } from "../models/EntityInfo";
-import { EnumInfo } from "../models/EnumInfo";
-import * as TomgUtils from "../Utils";
-import { AbstractDriver } from "./AbstractDriver";
-
-export class PostgresDriver extends AbstractDriver {
-    public defaultValues: DataTypeDefaults = new TypeormDriver.PostgresDriver({
-        options: { replication: undefined } as ConnectionOptions
-    } as any).dataTypeDefaults;
-    public readonly standardPort = 5432;
-    public readonly standardUser = "postgres";
-    public readonly standardSchema = "public";
-
-    private Connection: PG.Client;
-
-    public GetAllTablesQuery = async (schema: string) => {
-        const response: Array<{
-            TABLE_SCHEMA: string;
-            TABLE_NAME: string;
-            DB_NAME: string;
-            TABLE_TYPE: "BASE TABLE" | "VIEW";
-        }> = (await this.Connection.query(
-            `SELECT table_schema as "TABLE_SCHEMA",table_name as "TABLE_NAME", table_catalog as "DB_NAME", table_type as "TABLE_TYPE" FROM INFORMATION_SCHEMA.TABLES WHERE table_schema in (${schema}) `
-        )).rows;
-        return response;
-    };
-
-    public async GetEnums(schema: string): Promise<EnumInfo[]> {
-        const enumsResponse: Array<{
-            enum_name: string;
-            enum_value: string;
-        }> = (await this.Connection.query(`
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const changeCase = require("change-case");
+const PG = require("pg");
+const TypeormDriver = require("typeorm/driver/postgres/PostgresDriver");
+const ColumnInfo_1 = require("../models/ColumnInfo");
+const TomgUtils = require("../Utils");
+const AbstractDriver_1 = require("./AbstractDriver");
+class PostgresDriver extends AbstractDriver_1.AbstractDriver {
+    constructor() {
+        super(...arguments);
+        this.defaultValues = new TypeormDriver.PostgresDriver({
+            options: { replication: undefined }
+        }).dataTypeDefaults;
+        this.standardPort = 5432;
+        this.standardUser = "postgres";
+        this.standardSchema = "public";
+        this.GetAllTablesQuery = (schema) => __awaiter(this, void 0, void 0, function* () {
+            const response = (yield this.Connection.query(`SELECT table_schema as "TABLE_SCHEMA",table_name as "TABLE_NAME", table_catalog as "DB_NAME", table_type as "TABLE_TYPE" FROM INFORMATION_SCHEMA.TABLES WHERE table_schema in (${schema}) `)).rows;
+            return response;
+        });
+    }
+    GetEnums(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enumsResponse = (yield this.Connection.query(`
             SELECT t.typname AS enum_name,
                 e.enumlabel AS enum_value
             FROM pg_type t
                 JOIN pg_enum e ON t.oid = e.enumtypid
                 JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
             WHERE n.nspname = ${schema}`)).rows;
-        const enums = enumsResponse.reduce(
-            (enumMap, { enum_name, enum_value }) => {
+            const enums = enumsResponse.reduce((enumMap, { enum_name, enum_value }) => {
                 if (!enumMap.has(enum_name)) {
                     enumMap.set(enum_name, []);
                 }
-
-                enumMap.get(enum_name)!.push(enum_value);
+                enumMap.get(enum_name).push(enum_value);
                 return enumMap;
-            },
-            new Map<string, string[]>()
-        );
-
-        return Array.from(enums.keys()).map(name => ({
-            name,
-            values: enums.get(name)!
-        }));
+            }, new Map());
+            return Array.from(enums.keys()).map(name => ({
+                name,
+                values: enums.get(name)
+            }));
+        });
     }
-
-    public async GetCoulmnsFromEntity(
-        entities: EntityInfo[],
-        schema: string
-    ): Promise<EntityInfo[]> {
-        const response: Array<{
-            table_name: string;
-            column_name: string;
-            udt_name: string;
-            column_default: string;
-            is_nullable: string;
-            data_type: string;
-            character_maximum_length: number;
-            numeric_precision: number;
-            numeric_scale: number;
-            isidentity: string;
-            isunique: string;
-        }> = (await this.Connection
-            .query(`SELECT table_name,column_name,udt_name,column_default,is_nullable,
+    GetCoulmnsFromEntity(entities, schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = (yield this.Connection
+                .query(`SELECT table_name,column_name,udt_name,column_default,is_nullable,
             data_type,character_maximum_length,numeric_precision,numeric_scale,
             case when column_default LIKE 'nextval%' then 'YES' else 'NO' end isidentity,
 			(SELECT count(*)
@@ -93,11 +68,11 @@ export class PostgresDriver extends AbstractDriver {
             FROM INFORMATION_SCHEMA.COLUMNS c
             where table_schema in (${schema})
 			order by ordinal_position`)).rows;
-        entities.forEach(ent => {
-            response
-                .filter(filterVal => filterVal.table_name === ent.tsEntityName)
-                .forEach(resp => {
-                    const colInfo: ColumnInfo = new ColumnInfo();
+            entities.forEach(ent => {
+                response
+                    .filter(filterVal => filterVal.table_name === ent.tsEntityName)
+                    .forEach(resp => {
+                    const colInfo = new ColumnInfo_1.ColumnInfo();
                     colInfo.tsName = resp.column_name;
                     colInfo.options.name = resp.column_name;
                     colInfo.options.nullable = resp.is_nullable === "YES";
@@ -106,47 +81,23 @@ export class PostgresDriver extends AbstractDriver {
                     colInfo.options.default = colInfo.options.generated
                         ? null
                         : this.ReturnDefaultValueFunction(resp.column_default);
-
-                    const columnTypes = this.MatchColumnTypes(
-                        resp.data_type,
-                        resp.udt_name
-                    );
-
+                    const columnTypes = this.MatchColumnTypes(resp.data_type, resp.udt_name);
                     if (!columnTypes.sql_type || !columnTypes.ts_type) {
-                        if (
-                            resp.data_type === "USER-DEFINED" ||
-                            resp.data_type === "ARRAY"
-                        ) {
-                            TomgUtils.LogError(
-                                `Unknown ${resp.data_type} column type: ${
-                                    resp.udt_name
-                                }  table name: ${
-                                    resp.table_name
-                                } column name: ${resp.column_name}`
-                            );
-                        } else {
-                            TomgUtils.LogError(
-                                `Unknown column type: ${
-                                    resp.data_type
-                                }  table name: ${
-                                    resp.table_name
-                                } column name: ${resp.column_name}`
-                            );
+                        if (resp.data_type === "USER-DEFINED" ||
+                            resp.data_type === "ARRAY") {
+                            TomgUtils.LogError(`Unknown ${resp.data_type} column type: ${resp.udt_name}  table name: ${resp.table_name} column name: ${resp.column_name}`);
+                        }
+                        else {
+                            TomgUtils.LogError(`Unknown column type: ${resp.data_type}  table name: ${resp.table_name} column name: ${resp.column_name}`);
                         }
                         return;
                     }
-                    colInfo.options.type = columnTypes.sql_type as any;
+                    colInfo.options.type = columnTypes.sql_type;
                     colInfo.isCustomType = columnTypes.is_custom_type;
                     if (colInfo.isCustomType) {
-                        const customEnum = this.customTypes.find(
-                            val => val.name === resp.udt_name
-                        );
+                        const customEnum = this.customTypes.find(val => val.name === resp.udt_name);
                         if (!customEnum) {
-                            TomgUtils.LogError(
-                                `Tried to use custom user type ${
-                                    columnTypes.ts_type
-                                }, but was unable to find it in the schema.`
-                            );
+                            TomgUtils.LogError(`Tried to use custom user type ${columnTypes.ts_type}, but was unable to find it in the schema.`);
                             return;
                         }
                         colInfo.options.type = "enum";
@@ -158,32 +109,19 @@ export class PostgresDriver extends AbstractDriver {
                         colInfo.tsType = colInfo.tsType
                             .split("|")
                             .map(x => x.replace("|", "").trim() + "[]")
-                            .join(" | ") as any;
+                            .join(" | ");
                     }
-
-                    if (
-                        this.ColumnTypesWithPrecision.some(
-                            v => v === colInfo.options.type
-                        )
-                    ) {
+                    if (this.ColumnTypesWithPrecision.some(v => v === colInfo.options.type)) {
                         colInfo.options.precision = resp.numeric_precision;
                         colInfo.options.scale = resp.numeric_scale;
                     }
-                    if (
-                        this.ColumnTypesWithLength.some(
-                            v => v === colInfo.options.type
-                        )
-                    ) {
+                    if (this.ColumnTypesWithLength.some(v => v === colInfo.options.type)) {
                         colInfo.options.length =
                             resp.character_maximum_length > 0
                                 ? resp.character_maximum_length
                                 : undefined;
                     }
-                    if (
-                        this.ColumnTypesWithWidth.some(
-                            v => v === colInfo.options.type
-                        )
-                    ) {
+                    if (this.ColumnTypesWithWidth.some(v => v === colInfo.options.type)) {
                         colInfo.options.width =
                             resp.character_maximum_length > 0
                                 ? resp.character_maximum_length
@@ -193,28 +131,12 @@ export class PostgresDriver extends AbstractDriver {
                         ent.Columns.push(colInfo);
                     }
                 });
+            });
+            return entities;
         });
-        return entities;
     }
-
-    public MatchColumnTypes(dataType: string, udtName: string) {
-        const ret: {
-            ts_type:
-                | "number"
-                | "string"
-                | "boolean"
-                | "Date"
-                | "Buffer"
-                | "Object"
-                | "string | Object"
-                | "string | string[]"
-                | "any"
-                | string
-                | null;
-            sql_type: string | null;
-            is_array: boolean;
-            is_custom_type: boolean;
-        } = {
+    MatchColumnTypes(dataType, udtName) {
+        const ret = {
             ts_type: null,
             sql_type: null,
             is_array: false,
@@ -413,24 +335,19 @@ export class PostgresDriver extends AbstractDriver {
                 ret.is_array = true;
                 break;
             case "USER-DEFINED":
-                if (
-                    udtName === "citext" ||
+                if (udtName === "citext" ||
                     udtName === "hstore" ||
-                    udtName === "geometry"
-                ) {
+                    udtName === "geometry") {
                     ret.sql_type = udtName;
                     ret.ts_type = "string";
                     break;
                 }
-                const type = this.customTypes.find(
-                    ({ name }) => name === udtName
-                );
+                const type = this.customTypes.find(({ name }) => name === udtName);
                 if (type === undefined) {
                     ret.sql_type = null;
                     ret.ts_type = null;
                     break;
                 }
-
                 ret.sql_type = udtName;
                 ret.ts_type = changeCase.pascalCase(udtName);
                 ret.is_custom_type = true;
@@ -442,17 +359,9 @@ export class PostgresDriver extends AbstractDriver {
         }
         return ret;
     }
-    public async GetIndexesFromEntity(
-        entities: EntityInfo[],
-        schema: string
-    ): Promise<EntityInfo[]> {
-        const response: Array<{
-            tablename: string;
-            indexname: string;
-            columnname: string;
-            is_unique: number;
-            is_primary_key: number;
-        }> = (await this.Connection.query(`SELECT
+    GetIndexesFromEntity(entities, schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = (yield this.Connection.query(`SELECT
         c.relname AS tablename,
         i.relname as indexname,
         f.attname AS columnname,
@@ -476,22 +385,17 @@ export class PostgresDriver extends AbstractDriver {
         AND f.attnum > 0
         AND i.oid<>0
         ORDER BY c.relname,f.attname;`)).rows;
-        entities.forEach(ent => {
-            response
-                .filter(filterVal => filterVal.tablename === ent.tsEntityName)
-                .forEach(resp => {
-                    let indexInfo: IndexInfo = {} as IndexInfo;
-                    const indexColumnInfo: IndexColumnInfo = {} as IndexColumnInfo;
-                    if (
-                        ent.Indexes.filter(
-                            filterVal => filterVal.name === resp.indexname
-                        ).length > 0
-                    ) {
-                        indexInfo = ent.Indexes.find(
-                            filterVal => filterVal.name === resp.indexname
-                        )!;
-                    } else {
-                        indexInfo.columns = [] as IndexColumnInfo[];
+            entities.forEach(ent => {
+                response
+                    .filter(filterVal => filterVal.tablename === ent.tsEntityName)
+                    .forEach(resp => {
+                    let indexInfo = {};
+                    const indexColumnInfo = {};
+                    if (ent.Indexes.filter(filterVal => filterVal.name === resp.indexname).length > 0) {
+                        indexInfo = ent.Indexes.find(filterVal => filterVal.name === resp.indexname);
+                    }
+                    else {
+                        indexInfo.columns = [];
                         indexInfo.name = resp.indexname;
                         indexInfo.isUnique = resp.is_unique === 1;
                         indexInfo.isPrimaryKey = resp.is_primary_key === 1;
@@ -503,25 +407,13 @@ export class PostgresDriver extends AbstractDriver {
                     }
                     indexInfo.columns.push(indexColumnInfo);
                 });
+            });
+            return entities;
         });
-
-        return entities;
     }
-    public async GetRelations(
-        entities: EntityInfo[],
-        schema: string
-    ): Promise<EntityInfo[]> {
-        const response: Array<{
-            tablewithforeignkey: string;
-            fk_partno: number;
-            foreignkeycolumn: string;
-            tablereferenced: string;
-            foreignkeycolumnreferenced: string;
-            ondelete: "RESTRICT" | "CASCADE" | "SET NULL" | "NO ACTION";
-            onupdate: "RESTRICT" | "CASCADE" | "SET NULL" | "NO ACTION";
-            object_id: string;
-            // Distinct because of note in https://www.postgresql.org/docs/9.1/information-schema.html
-        }> = (await this.Connection.query(`SELECT DISTINCT
+    GetRelations(entities, schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = (yield this.Connection.query(`SELECT DISTINCT
             con.relname AS tablewithforeignkey,
             att.attnum as fk_partno,
                  att2.attname AS foreignkeycolumn,
@@ -561,97 +453,93 @@ export class PostgresDriver extends AbstractDriver {
                 AND att2.attnum = con.parent
                 AND rc.constraint_name= con.conname AND constraint_catalog=current_database() AND rc.constraint_schema=nspname
                 `)).rows;
-        const relationsTemp: IRelationTempInfo[] = [] as IRelationTempInfo[];
-        response.forEach(resp => {
-            let rels = relationsTemp.find(
-                val => val.object_id === resp.object_id
-            );
-            if (rels === undefined) {
-                rels = {} as IRelationTempInfo;
-                rels.ownerColumnsNames = [];
-                rels.referencedColumnsNames = [];
-                rels.actionOnDelete =
-                    resp.ondelete === "NO ACTION" ? null : resp.ondelete;
-                rels.actionOnUpdate =
-                    resp.onupdate === "NO ACTION" ? null : resp.onupdate;
-                rels.object_id = resp.object_id;
-                rels.ownerTable = resp.tablewithforeignkey;
-                rels.referencedTable = resp.tablereferenced;
-                relationsTemp.push(rels);
-            }
-            rels.ownerColumnsNames.push(resp.foreignkeycolumn);
-            rels.referencedColumnsNames.push(resp.foreignkeycolumnreferenced);
+            const relationsTemp = [];
+            response.forEach(resp => {
+                let rels = relationsTemp.find(val => val.object_id === resp.object_id);
+                if (rels === undefined) {
+                    rels = {};
+                    rels.ownerColumnsNames = [];
+                    rels.referencedColumnsNames = [];
+                    rels.actionOnDelete =
+                        resp.ondelete === "NO ACTION" ? null : resp.ondelete;
+                    rels.actionOnUpdate =
+                        resp.onupdate === "NO ACTION" ? null : resp.onupdate;
+                    rels.object_id = resp.object_id;
+                    rels.ownerTable = resp.tablewithforeignkey;
+                    rels.referencedTable = resp.tablereferenced;
+                    relationsTemp.push(rels);
+                }
+                rels.ownerColumnsNames.push(resp.foreignkeycolumn);
+                rels.referencedColumnsNames.push(resp.foreignkeycolumnreferenced);
+            });
+            entities = this.GetRelationsFromRelationTempInfo(relationsTemp, entities);
+            return entities;
         });
-        entities = this.GetRelationsFromRelationTempInfo(
-            relationsTemp,
-            entities
-        );
-        return entities;
     }
-    public async DisconnectFromServer() {
-        if (this.Connection) {
-            const promise = new Promise<boolean>((resolve, reject) => {
-                this.Connection.end(err => {
+    DisconnectFromServer() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.Connection) {
+                const promise = new Promise((resolve, reject) => {
+                    this.Connection.end(err => {
+                        if (!err) {
+                            resolve(true);
+                        }
+                        else {
+                            TomgUtils.LogError("Error connecting to Postgres Server.", false, err.message);
+                            reject(err);
+                        }
+                    });
+                });
+                yield promise;
+            }
+        });
+    }
+    ConnectToServer(connectionOptons) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.Connection = new PG.Client({
+                database: connectionOptons.databaseName,
+                host: connectionOptons.host,
+                password: connectionOptons.password,
+                port: connectionOptons.port,
+                ssl: connectionOptons.ssl,
+                user: connectionOptons.user
+            });
+            const promise = new Promise((resolve, reject) => {
+                this.Connection.connect(err => {
                     if (!err) {
                         resolve(true);
-                    } else {
-                        TomgUtils.LogError(
-                            "Error connecting to Postgres Server.",
-                            false,
-                            err.message
-                        );
+                    }
+                    else {
+                        TomgUtils.LogError("Error connecting to Postgres Server.", false, err.message);
                         reject(err);
                     }
                 });
             });
-            await promise;
-        }
-    }
-
-    public async ConnectToServer(connectionOptons: IConnectionOptions) {
-        this.Connection = new PG.Client({
-            database: connectionOptons.databaseName,
-            host: connectionOptons.host,
-            password: connectionOptons.password,
-            port: connectionOptons.port,
-            ssl: connectionOptons.ssl,
-            user: connectionOptons.user
+            yield promise;
         });
-
-        const promise = new Promise<boolean>((resolve, reject) => {
-            this.Connection.connect(err => {
-                if (!err) {
-                    resolve(true);
-                } else {
-                    TomgUtils.LogError(
-                        "Error connecting to Postgres Server.",
-                        false,
-                        err.message
-                    );
-                    reject(err);
-                }
-            });
+    }
+    CreateDB(dbName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.Connection.query(`CREATE DATABASE ${dbName}; `);
         });
-
-        await promise;
     }
-
-    public async CreateDB(dbName: string) {
-        await this.Connection.query(`CREATE DATABASE ${dbName}; `);
+    UseDB(dbName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.Connection.query(`USE ${dbName}; `);
+        });
     }
-    public async UseDB(dbName: string) {
-        await this.Connection.query(`USE ${dbName}; `);
+    DropDB(dbName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.Connection.query(`DROP DATABASE ${dbName}; `);
+        });
     }
-    public async DropDB(dbName: string) {
-        await this.Connection.query(`DROP DATABASE ${dbName}; `);
+    CheckIfDBExists(dbName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const resp = yield this.Connection.query(`SELECT datname FROM pg_database  WHERE datname  ='${dbName}' `);
+            return resp.rowCount > 0;
+        });
     }
-    public async CheckIfDBExists(dbName: string): Promise<boolean> {
-        const resp = await this.Connection.query(
-            `SELECT datname FROM pg_database  WHERE datname  ='${dbName}' `
-        );
-        return resp.rowCount > 0;
-    }
-    private ReturnDefaultValueFunction(defVal: string | null): string | null {
+    ReturnDefaultValueFunction(defVal) {
         if (!defVal) {
             return null;
         }
@@ -662,3 +550,5 @@ export class PostgresDriver extends AbstractDriver {
         return `() => "${defVal}"`;
     }
 }
+exports.PostgresDriver = PostgresDriver;
+//# sourceMappingURL=PostgresDriver.js.map

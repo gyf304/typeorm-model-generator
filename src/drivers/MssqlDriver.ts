@@ -5,6 +5,7 @@ import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { IConnectionOptions } from "../IConnectionOptions";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { EnumInfo } from "../models/EnumInfo";
 import * as TomgUtils from "../Utils";
 import { AbstractDriver } from "./AbstractDriver";
 
@@ -31,6 +32,12 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
         )).recordset;
         return response;
     };
+
+    public async GetEnums(schema: string): Promise<EnumInfo[]> {
+        throw new Error(
+            "This fork of typeorm-models only supports postgres right now"
+        );
+    }
 
     public async GetCoulmnsFromEntity(
         entities: EntityInfo[],

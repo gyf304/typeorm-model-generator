@@ -4,6 +4,7 @@ import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { IConnectionOptions } from "../IConnectionOptions";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { EnumInfo } from "../models/EnumInfo";
 import * as TomgUtils from "../Utils";
 import { AbstractDriver } from "./AbstractDriver";
 
@@ -37,6 +38,13 @@ export class SqliteDriver extends AbstractDriver {
         });
         return ret;
     }
+
+    public async GetEnums(schema: string): Promise<EnumInfo[]> {
+        throw new Error(
+            "This fork of typeorm-models only supports postgres right now"
+        );
+    }
+
     public async GetCoulmnsFromEntity(
         entities: EntityInfo[],
         schema: string

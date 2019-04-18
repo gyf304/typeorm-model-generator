@@ -19,6 +19,11 @@ export class RelationInfo {
         | "DEFAULT"
         | null;
     public relationIdField: boolean = false;
+    public joinInfo?: {
+        joinTable: string;
+        joinColumns: string[];
+        inverseJoinColumns: string[];
+    };
 
     get isOneToMany(): boolean {
         return this.relationType === "OneToMany";

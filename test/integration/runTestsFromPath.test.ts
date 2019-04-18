@@ -12,6 +12,7 @@ import chai = require('chai');
 import { IConnectionOptions } from "../../src/IConnectionOptions";
 import yn = require("yn");
 import { EntityInfo } from "../../src/models/EntityInfo";
+import { EnumInfo } from "../../src/models/EnumInfo";
 
 chai.use(chaiSubset);
 
@@ -67,18 +68,19 @@ function runTestForMultipleDrivers(testName: string, dbDrivers: string[], testPa
         const modelGenerationPromises = driversToRun.map(async (dbDriver) => {
             const { generationOptions, driver, connectionOptions, resultsPath, filesOrgPathTS } = await prepareTestRuns(testPartialPath, testName, dbDriver);
             let dbModel: EntityInfo[] = [];
+            let customTypes: EnumInfo[] = [];
             switch (testName) {
                 case '144':
-                    dbModel = await dataCollectionPhase(driver, Object.assign(connectionOptions, { databaseName: 'db1,db2' }));
+                    [dbModel, customTypes] = await dataCollectionPhase(driver, Object.assign(connectionOptions, { databaseName: 'db1,db2' }));
                     break;
 
                 default:
-                    dbModel = await dataCollectionPhase(driver, connectionOptions);
+                    [dbModel, customTypes] = await dataCollectionPhase(driver, connectionOptions);
                     break;
             }
 
             dbModel = modelCustomizationPhase(dbModel, generationOptions, driver.defaultValues);
-            modelGenerationPhase(connectionOptions, generationOptions, dbModel);
+            modelGenerationPhase(connectionOptions, generationOptions, dbModel, customTypes);
             const filesGenPath = path.resolve(resultsPath, 'entities');
             compareGeneratedFiles(filesOrgPathTS, filesGenPath);
             return { dbModel, generationOptions, connectionOptions, resultsPath, filesOrgPathTS, dbDriver };
@@ -104,9 +106,9 @@ async function runTest(dbDrivers: string[], testPartialPath: string, files: stri
     const modelGenerationPromises = dbDrivers.filter(driver => files.includes(driver))
         .map(async dbDriver => {
             const { generationOptions, driver, connectionOptions, resultsPath, filesOrgPathTS } = await prepareTestRuns(testPartialPath, dbDriver, dbDriver);
-            let dbModel = await dataCollectionPhase(driver, connectionOptions);
+            let [dbModel, customTypes] = await dataCollectionPhase(driver, connectionOptions);
             dbModel = modelCustomizationPhase(dbModel, generationOptions, driver.defaultValues);
-            modelGenerationPhase(connectionOptions, generationOptions, dbModel);
+            modelGenerationPhase(connectionOptions, generationOptions, dbModel, customTypes);
             const filesGenPath = path.resolve(resultsPath, 'entities');
             compareGeneratedFiles(filesOrgPathTS, filesGenPath);
             return { dbModel, generationOptions, connectionOptions, resultsPath, filesOrgPathTS, dbDriver };

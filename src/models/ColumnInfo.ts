@@ -13,6 +13,8 @@ export class ColumnInfo {
         | "Object"
         | "string | Object"
         | "string | string[]"
-        | "any";
+        | "any"
+        | string;
+    public isCustomType: boolean = false;
     public relations: RelationInfo[] = [];
 }

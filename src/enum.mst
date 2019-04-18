@@ -1,0 +1,4 @@
+export const enum {{toEntityName name}} {
+{{#each values}}    {{constantCase .}} = "{{.}}",
+    {{/each}}
+}

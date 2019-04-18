@@ -1,3 +1,4 @@
+import * as changeCase from "change-case";
 import {
     WithLengthColumnType,
     WithPrecisionColumnType,
@@ -7,8 +8,11 @@ import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { IConnectionOptions } from "../IConnectionOptions";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { EnumInfo } from "../models/EnumInfo";
 import { RelationInfo } from "../models/RelationInfo";
 import * as TomgUtils from "../Utils";
+
+import * as util from "util";
 
 export abstract class AbstractDriver {
     public abstract standardPort: number;
@@ -67,8 +71,13 @@ export abstract class AbstractDriver {
             TABLE_SCHEMA: string;
             TABLE_NAME: string;
             DB_NAME: string;
+            TABLE_TYPE?: "BASE TABLE" | "VIEW";
         }>
     >;
+
+    public customTypes: EnumInfo[] = [];
+
+    public abstract async GetEnums(schema: string): Promise<EnumInfo[]>;
 
     public FindManyToManyRelations(dbModel: EntityInfo[]) {
         const manyToManyEntities = dbModel.filter(
@@ -125,6 +134,28 @@ export abstract class AbstractDriver {
                 col1Rel.isOwner = true;
                 col1Rel.ownerColumn = namesOfRelatedTables[0];
 
+                const entityColumnsWithRelations = entity.Columns.filter(
+                    col => col.relations.length > 0
+                );
+                const x = util.inspect.defaultOptions.depth;
+                util.inspect.defaultOptions.depth = 1000;
+                console.log(entity.Columns, namesOfRelatedTables);
+                util.inspect.defaultOptions.depth = x;
+                col1Rel.joinInfo = {
+                    inverseJoinColumns: entity.Columns.filter(col =>
+                        col.relations.some(
+                            rel => rel.relatedTable === namesOfRelatedTables[1]
+                        )
+                    ).map(col => col.options.name!),
+                    joinColumns: entity.Columns.filter(col =>
+                        col.relations.some(
+                            rel => rel.relatedTable === namesOfRelatedTables[0]
+                        )
+                    ).map(col => col.options.name!),
+                    joinTable: entity.sqlEntityName
+                };
+                console.log(col1Rel.joinInfo);
+
                 column1.relations.push(col1Rel);
                 relatedTable1.Columns.push(column1);
 
@@ -145,12 +176,13 @@ export abstract class AbstractDriver {
     }
     public async GetDataFromServer(
         connectionOptons: IConnectionOptions
-    ): Promise<EntityInfo[]> {
+    ): Promise<[EntityInfo[], EnumInfo[]]> {
         let dbModel = [] as EntityInfo[];
         await this.ConnectToServer(connectionOptons);
         const sqlEscapedSchema = this.escapeCommaSeparatedList(
             connectionOptons.schemaName
         );
+        this.customTypes = await this.GetEnums(sqlEscapedSchema);
         dbModel = await this.GetAllTables(
             sqlEscapedSchema,
             connectionOptons.databaseName
@@ -173,7 +205,7 @@ export abstract class AbstractDriver {
         await this.DisconnectFromServer();
         dbModel = this.FindManyToManyRelations(dbModel);
         this.FindPrimaryColumnsFromIndexes(dbModel);
-        return dbModel;
+        return [dbModel, this.customTypes];
     }
 
     public abstract async ConnectToServer(connectionOptons: IConnectionOptions);
@@ -192,6 +224,7 @@ export abstract class AbstractDriver {
             ent.Columns = [] as ColumnInfo[];
             ent.Indexes = [] as IndexInfo[];
             ent.Database = dbNames.includes(",") ? val.DB_NAME : "";
+            ent.Type = val.TABLE_TYPE;
             ret.push(ent);
         });
         return ret;
@@ -270,9 +303,15 @@ export abstract class AbstractDriver {
                     ind =>
                         ind.isUnique &&
                         ind.columns.length === 1 &&
-                        ind.columns[0].name === ownerColumn!.tsName
+                        ind.columns.some(
+                            col => col.name === ownerColumn!.tsName
+                        )
                 );
                 isOneToMany = !index;
+                const x = util.inspect.defaultOptions.depth;
+                util.inspect.defaultOptions.depth = 1000;
+                console.log(ownerEntity, ownerColumn);
+                util.inspect.defaultOptions.depth = x;
 
                 const ownerRelation = new RelationInfo();
                 ownerRelation.actionOnDelete = relationTmp.actionOnDelete;
@@ -371,16 +410,19 @@ export abstract class AbstractDriver {
                         cIndex => cIndex.name === col.tsName
                     )
             ).forEach(col => (col.options.primary = true));
-            if (
-                !entity.Columns.some(v => {
-                    return !!v.options.primary;
-                })
-            ) {
-                TomgUtils.LogError(
-                    `Table ${entity.tsEntityName} has no PK.`,
-                    false
-                );
-                return;
+            if (!entity.Columns.some(v => !!v.options.primary)) {
+                if (entity.Type === "VIEW") {
+                    // jokes, let's just call everything primary
+                    entity.Columns.forEach(col => {
+                        col.options.primary = true;
+                    });
+                } else {
+                    TomgUtils.LogError(
+                        `Table ${entity.tsEntityName} has no PK.`,
+                        false
+                    );
+                    return;
+                }
             }
         });
     }
