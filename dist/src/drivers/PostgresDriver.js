@@ -166,7 +166,7 @@ class PostgresDriver extends AbstractDriver_1.AbstractDriver {
                 ret.ts_type = "string";
                 break;
             case "numeric":
-                ret.ts_type = "string";
+                ret.ts_type = "number"; // modified: we want to be able to use floats nicely
                 break;
             case "real":
                 ret.ts_type = "number";

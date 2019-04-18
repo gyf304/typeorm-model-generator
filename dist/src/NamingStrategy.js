@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const changeCase = require("change-case");
 const AbstractNamingStrategy_1 = require("./AbstractNamingStrategy");
 class NamingStrategy extends AbstractNamingStrategy_1.AbstractNamingStrategy {
     relationName(columnOldName, relation, dbModel) {
         const isRelationToMany = relation.isOneToMany || relation.isManyToMany;
         const ownerEntity = dbModel.find(v => v.tsEntityName === relation.ownerTable);
-        let columnName = columnOldName[0].toLowerCase() +
-            columnOldName.substring(1, columnOldName.length);
+        let columnName = changeCase.camelCase(columnOldName);
         if (columnName.toLowerCase().endsWith("id") &&
             !columnName.toLowerCase().endsWith("guid")) {
             columnName = columnName.substring(0, columnName.toLowerCase().lastIndexOf("id"));
