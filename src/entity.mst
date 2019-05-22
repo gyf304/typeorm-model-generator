@@ -43,7 +43,7 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
         enum:[{{#each enum}}"{{.}}",{{/each}}],{{/if}}{{#array}}
         array:{{array}},{{/array}}
         name:"{{name}}"
-        }){{/options}}
+        }){{/../options}}
     {{toPropertyName ../tsName}}Id: {{../tsType}};{{/if}}{{/if}}{{/relations}}
 
     {{/Columns}}
