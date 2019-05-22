@@ -29,11 +29,23 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
     {{#if isManyToMany}}@JoinTable({{#joinInfo}}{ name: '{{joinTable}}', joinColumns: [{{#joinColumns}} { name: "{{.}}" },{{/joinColumns}} ], inverseJoinColumns: [{{#inverseJoinColumns}} { name: "{{.}}" },{{/inverseJoinColumns}} ] }{{/joinInfo}}){{else}}@JoinColumn({ name:'{{ ../options/name}}'}){{/if}}{{/isOwner}}
     {{#if (or isOneToMany isManyToMany)}}{{printPropertyVisibility}}{{toPropertyName ../tsName}}:{{toLazy (concat  (toEntityName relatedTable) "[]")}};
     {{else}}{{printPropertyVisibility}}{{toPropertyName ../tsName}}:{{toLazy (concat (toEntityName relatedTable) ' | null')}};
-    {{/if}}
-    {{#if relationIdField }}
+    {{/if}}{{#if relationIdField }}{{#if (or isManyToOne isOneToOne)}}{{#options}}
+    @Column("{{type}}",{ {{#nullable}}
+        nullable:true,{{/nullable}}{{^nullable}}
+        nullable:false,{{/nullable}}{{#primary}}
+        primary:{{primary}},{{/primary}}{{#unique}}
+        unique: true,{{/unique}}{{#length}}
+        length:{{.}},{{/length}}{{#width}}
+        width:{{.}},{{/width}}{{#default}}
+        default: {{.}},{{/default}}{{#precision}}
+        precision:{{.}},{{/precision}}{{#scale}}
+        scale:{{.}},{{/scale}}{{#if enum}}
+        enum:[{{#each enum}}"{{.}}",{{/each}}],{{/if}}{{#array}}
+        array:{{array}},{{/array}}
+        name:"{{name}}"
+        }){{/options}}
+    {{toPropertyName ../tsName}}Id: {{../tsType}};{{/if}}{{/relations}}
 
-    @RelationId(({{../../tsEntityName}}: {{toEntityName ../../tsEntityName}}) => {{../../tsEntityName}}.{{toPropertyName ../tsName}})
-    {{toPropertyName ../tsName}}Id: {{#if (or isManyToOne isOneToOne)}}{{../tsType}}{{else}}{{toLazy (concat  ../tsType "[]")}}{{/if}};{{/if}}{{/relations}}
     {{/Columns}}
     {{#if GenerateConstructor}}
     constructor(init?: Partial<{{toEntityName tsEntityName}}>) {
