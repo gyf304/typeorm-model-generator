@@ -29,7 +29,7 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
     {{#if isManyToMany}}@JoinTable({{#joinInfo}}{ name: '{{joinTable}}', joinColumns: [{{#joinColumns}} { name: "{{.}}" },{{/joinColumns}} ], inverseJoinColumns: [{{#inverseJoinColumns}} { name: "{{.}}" },{{/inverseJoinColumns}} ] }{{/joinInfo}}){{else}}@JoinColumn({ name:'{{ ../options/name}}'}){{/if}}{{/isOwner}}
     {{#if (or isOneToMany isManyToMany)}}{{printPropertyVisibility}}{{toPropertyName ../tsName}}:{{toLazy (concat  (toEntityName relatedTable) "[]")}};
     {{else}}{{printPropertyVisibility}}{{toPropertyName ../tsName}}:{{toLazy (concat (toEntityName relatedTable) ' | null')}};
-    {{/if}}{{#if relationIdField }}{{#if (or isManyToOne isOneToOne)}}{{#options}}
+    {{/if}}{{#if relationIdField }}{{#if (or isManyToOne isOneToOne)}}{{#../options}}
     @Column("{{type}}",{ {{#nullable}}
         nullable:true,{{/nullable}}{{^nullable}}
         nullable:false,{{/nullable}}{{#primary}}
