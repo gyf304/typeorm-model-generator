@@ -436,6 +436,10 @@ export class PostgresDriver extends AbstractDriver {
                 ret.is_custom_type = true;
                 break;
             default:
+                if (this.customTypes.find(({ name }) => name === dataType)) {
+                    // Fix for arrays of user-defined types
+                    return this.MatchColumnTypes("USER-DEFINED", dataType);
+                }
                 ret.ts_type = null;
                 ret.sql_type = null;
                 break;
