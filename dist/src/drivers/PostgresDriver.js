@@ -95,7 +95,11 @@ class PostgresDriver extends AbstractDriver_1.AbstractDriver {
                     colInfo.options.type = columnTypes.sql_type;
                     colInfo.isCustomType = columnTypes.is_custom_type;
                     if (colInfo.isCustomType) {
-                        const customEnum = this.customTypes.find(val => val.name === resp.udt_name);
+                        let typeName = resp.udt_name;
+                        if (columnTypes.is_array) {
+                            typeName = typeName.slice(1);
+                        }
+                        const customEnum = this.customTypes.find(val => val.name === typeName);
                         if (!customEnum) {
                             TomgUtils.LogError(`Tried to use custom user type ${columnTypes.ts_type}, but was unable to find it in the schema.`);
                             return;
@@ -106,10 +110,7 @@ class PostgresDriver extends AbstractDriver_1.AbstractDriver {
                     colInfo.tsType = columnTypes.ts_type;
                     colInfo.options.array = columnTypes.is_array;
                     if (colInfo.options.array) {
-                        colInfo.tsType = colInfo.tsType
-                            .split("|")
-                            .map(x => x.replace("|", "").trim() + "[]")
-                            .join(" | ");
+                        colInfo.tsType = `(${colInfo.tsType})[]`;
                     }
                     if (this.ColumnTypesWithPrecision.some(v => v === colInfo.options.type)) {
                         colInfo.options.precision = resp.numeric_precision;

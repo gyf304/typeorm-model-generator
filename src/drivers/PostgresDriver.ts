@@ -138,8 +138,12 @@ export class PostgresDriver extends AbstractDriver {
                     colInfo.options.type = columnTypes.sql_type as any;
                     colInfo.isCustomType = columnTypes.is_custom_type;
                     if (colInfo.isCustomType) {
+                        let typeName: string = resp.udt_name;
+                        if (columnTypes.is_array) {
+                            typeName = typeName.slice(1);
+                        }
                         const customEnum = this.customTypes.find(
-                            val => val.name === resp.udt_name
+                            val => val.name === typeName
                         );
                         if (!customEnum) {
                             TomgUtils.LogError(
@@ -155,10 +159,7 @@ export class PostgresDriver extends AbstractDriver {
                     colInfo.tsType = columnTypes.ts_type;
                     colInfo.options.array = columnTypes.is_array;
                     if (colInfo.options.array) {
-                        colInfo.tsType = colInfo.tsType
-                            .split("|")
-                            .map(x => x.replace("|", "").trim() + "[]")
-                            .join(" | ") as any;
+                        colInfo.tsType = `(${colInfo.tsType})[]`;
                     }
 
                     if (
