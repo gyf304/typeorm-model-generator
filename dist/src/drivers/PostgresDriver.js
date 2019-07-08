@@ -332,6 +332,7 @@ class PostgresDriver extends AbstractDriver_1.AbstractDriver {
                 const z = this.MatchColumnTypes(udtName.substring(1), udtName);
                 ret.ts_type = z.ts_type;
                 ret.sql_type = z.sql_type;
+                ret.is_custom_type = z.is_custom_type;
                 ret.is_array = true;
                 break;
             case "USER-DEFINED":
