@@ -44,7 +44,7 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
         array:{{array}},{{/array}}
         name:"{{name}}"
         }){{/../options}}
-    {{toPropertyName ../tsName}}Id: {{../tsType}};{{/if}}{{/if}}{{/relations}}
+    {{toPropertyName ../tsName}}Id: {{../tsType}}{{#options/nullable}} | null{{/options/nullable}};{{/if}}{{/if}}{{/relations}}
 
     {{/Columns}}
     {{#if GenerateConstructor}}
