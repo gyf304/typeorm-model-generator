@@ -7,7 +7,7 @@ class NamingStrategy extends AbstractNamingStrategy_1.AbstractNamingStrategy {
         const isRelationToMany = relation.isOneToMany || relation.isManyToMany;
         const ownerEntity = dbModel.find(v => v.tsEntityName === relation.ownerTable);
         let columnName = changeCase.camelCase(columnOldName);
-        columnName = /^(.*?)((?<!g)uid|(?<!u)id)?$/i.exec(columnName)[1];
+        columnName = /^(.+?)((?<!g)uid|(?<!u)id)?$/i.exec(columnName)[1];
         if (!isNaN(parseInt(columnName[columnName.length - 1], 10))) {
             columnName = columnName.substring(0, columnName.length - 1);
         }
