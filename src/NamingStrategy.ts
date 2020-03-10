@@ -14,16 +14,8 @@ export class NamingStrategy extends AbstractNamingStrategy {
             v => v.tsEntityName === relation.ownerTable
         )!;
         let columnName = changeCase.camelCase(columnOldName);
+        columnName = /^(.*?)((?<!g)uid|(?<!u)id)?$/i.exec(columnName)![1];
 
-        if (
-            columnName.toLowerCase().endsWith("id") &&
-            !columnName.toLowerCase().endsWith("guid")
-        ) {
-            columnName = columnName.substring(
-                0,
-                columnName.toLowerCase().lastIndexOf("id")
-            );
-        }
         if (!isNaN(parseInt(columnName[columnName.length - 1], 10))) {
             columnName = columnName.substring(0, columnName.length - 1);
         }
