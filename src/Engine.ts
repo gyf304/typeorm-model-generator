@@ -420,7 +420,7 @@ function applyNamingStrategy(
                     const newName = namingStrategy.relationName(
                         column.tsName,
                         relation,
-                        model
+                        entity
                     );
                     model.forEach(entity2 => {
                         entity2.Columns.forEach(column2 => {

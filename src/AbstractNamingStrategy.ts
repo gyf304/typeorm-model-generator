@@ -5,7 +5,7 @@ export abstract class AbstractNamingStrategy {
     public abstract relationName(
         columnName: string,
         relation: RelationInfo,
-        dbModel: EntityInfo[]
+        entity: EntityInfo
     ): string;
 
     public abstract entityName(entityName: string): string;
