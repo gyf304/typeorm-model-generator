@@ -214,7 +214,10 @@ export function modelGenerationPhase(
                 break;
         }
         const resultFilePath = path.resolve(entitesPath, casedFileName + ".ts");
-        const rendered = compliedTemplate(element);
+        const rendered = compliedTemplate(element, {
+            allowProtoMethodsByDefault: true,
+            allowProtoPropertiesByDefault: true
+        });
         fs.writeFileSync(resultFilePath, rendered, {
             encoding: "UTF-8",
             flag: "w"
@@ -226,7 +229,10 @@ export function modelGenerationPhase(
         noEscape: true
     });
     customTypes.forEach(en => {
-        const rendered = compiledEnumTemplate(en);
+        const rendered = compiledEnumTemplate(en, {
+            allowProtoMethodsByDefault: true,
+            allowProtoPropertiesByDefault: true
+        });
         let casedFileName = "";
         switch (generationOptions.convertCaseFile) {
             case "camel":

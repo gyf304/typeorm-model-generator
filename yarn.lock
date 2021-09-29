@@ -94,15 +94,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/handlebars@npm:^4.0.40":
-  version: 4.1.0
-  resolution: "@types/handlebars@npm:4.1.0"
-  dependencies:
-    handlebars: "*"
-  checksum: 536d9f690c93f5d13fcc4a37ae7dd11f41eb73c47416d56f51623aedc3b573ad9775d6618ede75d7bf9148ac75694e50f8e6ba5773de7d9f040811368c73739f
-  languageName: node
-  linkType: hard
-
 "@types/inquirer@npm:0.0.44":
   version: 0.0.44
   resolution: "@types/inquirer@npm:0.0.44"
@@ -1672,7 +1663,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars@npm:*, handlebars@npm:^4.0.1, handlebars@npm:^4.0.12":
+"handlebars@npm:^4.0.1":
   version: 4.1.1
   resolution: "handlebars@npm:4.1.1"
   dependencies:
@@ -1686,6 +1677,24 @@ __metadata:
   bin:
     handlebars: bin/handlebars
   checksum: df13837843c16e04e8f3c537a81b9dda5009a77b55f7237be514598bd6559a42e2148ca305bde9b6aa25b0ed578aef04028d531562bd4dba5e7736505670c0d7
+  languageName: node
+  linkType: hard
+
+"handlebars@npm:^4.7.7":
+  version: 4.7.7
+  resolution: "handlebars@npm:4.7.7"
+  dependencies:
+    minimist: ^1.2.5
+    neo-async: ^2.6.0
+    source-map: ^0.6.1
+    uglify-js: ^3.1.4
+    wordwrap: ^1.0.0
+  dependenciesMeta:
+    uglify-js:
+      optional: true
+  bin:
+    handlebars: bin/handlebars
+  checksum: 1e79a43f5e18d15742977cb987923eab3e2a8f44f2d9d340982bcb69e1735ed049226e534d7c1074eaddaf37e4fb4f471a8adb71cddd5bc8cf3f894241df5cee
   languageName: node
   linkType: hard
 
@@ -2696,6 +2705,13 @@ __metadata:
   version: 0.0.8
   resolution: "minimist@npm:0.0.8"
   checksum: 042f8b626b1fa44dffc23bac55771425ac4ee9d267b56f9064c07713e516e1799f3ba933bb628d2475a210caf7dcdb98161611baa1f0daf49309a944cb4bc48f
+  languageName: node
+  linkType: hard
+
+"minimist@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "minimist@npm:1.2.5"
+  checksum: 86706ce5b36c16bfc35c5fe3dbb01d5acdc9a22f2b6cc810b6680656a1d2c0e44a0159c9a3ba51fb072bb5c203e49e10b51dcd0eec39c481f4c42086719bae52
   languageName: node
   linkType: hard
 
@@ -4367,7 +4383,6 @@ resolve@1.1.x:
     "@types/chai-as-promised": 7.1.0
     "@types/chai-subset": ^1.3.2
     "@types/fs-extra": ^5.0.5
-    "@types/handlebars": ^4.0.40
     "@types/inquirer": 0.0.44
     "@types/mocha": ^5.2.6
     "@types/mssql": ^4.0.12
@@ -4384,7 +4399,7 @@ resolve@1.1.x:
     codecov: ^3.2.0
     dotenv: ^6.2.0
     fs-extra: ^7.0.1
-    handlebars: ^4.0.12
+    handlebars: ^4.7.7
     husky: ^1.3.1
     inquirer: ^6.2.2
     istanbul: ^0.4.5
