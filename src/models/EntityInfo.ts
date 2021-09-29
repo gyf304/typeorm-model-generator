@@ -5,7 +5,6 @@ export class EntityInfo {
     public sqlEntityName: string;
     public Columns: ColumnInfo[];
     public Imports: string[];
-    public UniqueImports: string[];
     public Indexes: IndexInfo[];
     public Schema: string;
     public GenerateConstructor: boolean;
@@ -13,7 +12,7 @@ export class EntityInfo {
     public Database: string;
     public Type?: "BASE TABLE" | "VIEW";
 
-    public relationImports() {
+    public get UniqueImports() {
         const imports: string[] = [];
         this.Columns.forEach(column => {
             if (column.isCustomType) {
@@ -25,7 +24,7 @@ export class EntityInfo {
                 }
             });
         });
-        this.UniqueImports = imports.filter(
+        return imports.filter(
             (elem, index, self) => index === self.indexOf(elem)
         );
     }

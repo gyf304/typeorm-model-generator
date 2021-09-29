@@ -18,17 +18,17 @@ const TomgUtils = require("./Utils");
 function createDriver(driverName) {
     switch (driverName) {
         case "mssql":
-            return new (require("./drivers/MssqlDriver").MssqlDriver)();
+            return new (require("./drivers/MssqlDriver")).MssqlDriver();
         case "postgres":
-            return new (require("./drivers/PostgresDriver").PostgresDriver)();
+            return new (require("./drivers/PostgresDriver")).PostgresDriver();
         case "mysql":
-            return new (require("./drivers/MysqlDriver").MysqlDriver)();
+            return new (require("./drivers/MysqlDriver")).MysqlDriver();
         case "mariadb":
-            return new (require("./drivers/MariaDbDriver").MariaDbDriver)();
+            return new (require("./drivers/MariaDbDriver")).MariaDbDriver();
         case "oracle":
-            return new (require("./drivers/OracleDriver").OracleDriver)();
+            return new (require("./drivers/OracleDriver")).OracleDriver();
         case "sqlite":
-            return new (require("./drivers/SqliteDriver").SqliteDriver)();
+            return new (require("./drivers/SqliteDriver")).SqliteDriver();
         default:
             TomgUtils.LogError("Database engine not recognized.", false);
             throw new Error("Database engine not recognized.");

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityInfo {
-    relationImports() {
+    get UniqueImports() {
         const imports = [];
         this.Columns.forEach(column => {
             if (column.isCustomType) {
@@ -13,7 +13,7 @@ class EntityInfo {
                 }
             });
         });
-        this.UniqueImports = imports.filter((elem, index, self) => index === self.indexOf(elem));
+        return imports.filter((elem, index, self) => index === self.indexOf(elem));
     }
 }
 exports.EntityInfo = EntityInfo;
