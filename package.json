@@ -37,7 +37,7 @@
   "peerDependencies": {
     "mssql": "^4.3.2",
     "mysql": "^2.16.0",
-    "pg": "^8.5.1",
+    "pg": "^8.7.1",
     "sqlite3": "^4.0.6"
   },
   "peerDependenciesMeta": {
@@ -78,6 +78,7 @@
     "istanbul": "^0.4.5",
     "lint-staged": "^8.1.5",
     "mocha": "^6.0.2",
+    "pg": "^8.7.1",
     "prettier": "^1.16.4",
     "remap-istanbul": "^0.13.0",
     "rimraf": "^2.6.3",
@@ -90,5 +91,6 @@
     "hooks": {
       "pre-commit": "npm run prettier && git update-index --again"
     }
-  }
+  },
+  "packageManager": "yarn@3.0.2"
 }

@@ -12,3 +12,7 @@ coverage/
 dist/test
 !gulpfile.js
 .tomg-config
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
