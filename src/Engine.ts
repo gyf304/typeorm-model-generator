@@ -4,12 +4,6 @@ import * as Handlebars from "handlebars";
 import path = require("path");
 import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { AbstractDriver } from "./drivers/AbstractDriver";
-import { MariaDbDriver } from "./drivers/MariaDbDriver";
-import { MssqlDriver } from "./drivers/MssqlDriver";
-import { MysqlDriver } from "./drivers/MysqlDriver";
-import { OracleDriver } from "./drivers/OracleDriver";
-import { PostgresDriver } from "./drivers/PostgresDriver";
-import { SqliteDriver } from "./drivers/SqliteDriver";
 import { IConnectionOptions } from "./IConnectionOptions";
 import { IGenerationOptions } from "./IGenerationOptions";
 import { EntityInfo } from "./models/EntityInfo";
@@ -20,17 +14,17 @@ import * as TomgUtils from "./Utils";
 export function createDriver(driverName: string): AbstractDriver {
     switch (driverName) {
         case "mssql":
-            return new MssqlDriver();
+            return new (require("./drivers/MssqlDriver")).MssqlDriver();
         case "postgres":
-            return new PostgresDriver();
+            return new (require("./drivers/PostgresDriver")).PostgresDriver();
         case "mysql":
-            return new MysqlDriver();
+            return new (require("./drivers/MysqlDriver")).MysqlDriver();
         case "mariadb":
-            return new MariaDbDriver();
+            return new (require("./drivers/MariaDbDriver")).MariaDbDriver();
         case "oracle":
-            return new OracleDriver();
+            return new (require("./drivers/OracleDriver")).OracleDriver();
         case "sqlite":
-            return new SqliteDriver();
+            return new (require("./drivers/SqliteDriver")).SqliteDriver();
         default:
             TomgUtils.LogError("Database engine not recognized.", false);
             throw new Error("Database engine not recognized.");

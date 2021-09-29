@@ -13,28 +13,22 @@ const changeCase = require("change-case");
 const fs = require("fs");
 const Handlebars = require("handlebars");
 const path = require("path");
-const MariaDbDriver_1 = require("./drivers/MariaDbDriver");
-const MssqlDriver_1 = require("./drivers/MssqlDriver");
-const MysqlDriver_1 = require("./drivers/MysqlDriver");
-const OracleDriver_1 = require("./drivers/OracleDriver");
-const PostgresDriver_1 = require("./drivers/PostgresDriver");
-const SqliteDriver_1 = require("./drivers/SqliteDriver");
 const NamingStrategy_1 = require("./NamingStrategy");
 const TomgUtils = require("./Utils");
 function createDriver(driverName) {
     switch (driverName) {
         case "mssql":
-            return new MssqlDriver_1.MssqlDriver();
+            return new (require("./drivers/MssqlDriver").MssqlDriver)();
         case "postgres":
-            return new PostgresDriver_1.PostgresDriver();
+            return new (require("./drivers/PostgresDriver").PostgresDriver)();
         case "mysql":
-            return new MysqlDriver_1.MysqlDriver();
+            return new (require("./drivers/MysqlDriver").MysqlDriver)();
         case "mariadb":
-            return new MariaDbDriver_1.MariaDbDriver();
+            return new (require("./drivers/MariaDbDriver").MariaDbDriver)();
         case "oracle":
-            return new OracleDriver_1.OracleDriver();
+            return new (require("./drivers/OracleDriver").OracleDriver)();
         case "sqlite":
-            return new SqliteDriver_1.SqliteDriver();
+            return new (require("./drivers/SqliteDriver").SqliteDriver)();
         default:
             TomgUtils.LogError("Database engine not recognized.", false);
             throw new Error("Database engine not recognized.");
